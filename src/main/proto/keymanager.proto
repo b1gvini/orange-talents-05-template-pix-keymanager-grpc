@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.zup.b1gvini";
+option java_outer_classname = "Keymanager";
+option objc_class_prefix = "HLW";
+
+package br.com.zup.b1gvini;
+
+service RegistraGrpcService {
+  rpc registra (RegistraPixRequest) returns (RegistraPixResponse) {}
+}
+
+enum TipoChave{
+  CHAVE_DESCONHECIDA = 0;
+  CPF = 1;
+  TELEFONE = 2;
+  EMAIL = 3;
+  ALEATORIA = 4;
+}
+
+enum TipoConta{
+  CONTA_DESCONHECIDA = 0;
+  CONTA_CORRENTE = 1;
+  CONTA_POUPANCA = 2;
+}
+
+message RegistraPixRequest {
+  string clientId = 1;
+  TipoChave tipoChave = 2;
+  string valorChave = 3;
+  TipoConta tipoConta = 4;
+}
+
+message RegistraPixResponse {
+  string clientId = 1;
+  string PixId = 2;
+}
