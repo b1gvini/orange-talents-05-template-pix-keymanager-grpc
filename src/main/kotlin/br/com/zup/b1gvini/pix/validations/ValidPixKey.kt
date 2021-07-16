@@ -1,6 +1,6 @@
 package br.com.zup.b1gvini.pix
 
-import br.com.zup.b1gvini.pix.grpc.NovaChavePixRequest
+import br.com.zup.b1gvini.pix.grpc.registra.NovaChavePixRequest
 import io.micronaut.core.annotation.AnnotationValue
 import io.micronaut.validation.validator.constraints.ConstraintValidator
 import io.micronaut.validation.validator.constraints.ConstraintValidatorContext
@@ -17,7 +17,7 @@ import kotlin.reflect.KClass
 @Retention(RUNTIME)
 @Constraint(validatedBy = [ValidPixKeyValidator::class])
 annotation class ValidPixKey(
-    val message: String = "chave Pix inválida - Informe o valor da chave corretamente.",
+    val message: String = "chave Pix inválida '\${validatedValue.tipoChave}'.",
     val groups: Array<KClass<Any>> = [],
     val payload: Array<KClass<Payload>> = [],
 )

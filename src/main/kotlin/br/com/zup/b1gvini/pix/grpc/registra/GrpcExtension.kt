@@ -1,4 +1,4 @@
-package br.com.zup.b1gvini.pix.grpc
+package br.com.zup.b1gvini.pix.grpc.registra
 
 import br.com.zup.b1gvini.RegistraPixRequest
 import br.com.zup.b1gvini.pix.model.enums.TipoChave

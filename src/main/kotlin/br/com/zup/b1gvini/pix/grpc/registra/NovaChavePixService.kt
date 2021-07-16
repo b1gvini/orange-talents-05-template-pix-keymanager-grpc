@@ -1,4 +1,4 @@
-package br.com.zup.b1gvini.pix.grpc
+package br.com.zup.b1gvini.pix.grpc.registra
 
 import br.com.zup.b1gvini.clients.ItauERP
 import br.com.zup.b1gvini.compartilhado.exceptions.BadRequestException

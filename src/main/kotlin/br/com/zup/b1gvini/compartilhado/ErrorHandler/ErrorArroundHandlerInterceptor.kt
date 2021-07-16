@@ -3,6 +3,7 @@ package br.com.zup.b1gvini.compartilhado
 import br.com.zup.b1gvini.compartilhado.ErrorHandler.ErrorArroundHandler
 import br.com.zup.b1gvini.compartilhado.exceptions.BadRequestException
 import br.com.zup.b1gvini.compartilhado.exceptions.ChavePixExistenteException
+import br.com.zup.b1gvini.compartilhado.exceptions.NotFoundException
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 import io.micronaut.aop.InterceptorBean
@@ -25,6 +26,10 @@ class ErrorAroundHandlerInterceptor : MethodInterceptor<Any, Any> {
                     .withDescription(ex.message)
 
                 is ChavePixExistenteException -> Status.ALREADY_EXISTS
+                    .withCause(ex)
+                    .withDescription(ex.message)
+
+                is NotFoundException -> Status.NOT_FOUND
                     .withCause(ex)
                     .withDescription(ex.message)
 

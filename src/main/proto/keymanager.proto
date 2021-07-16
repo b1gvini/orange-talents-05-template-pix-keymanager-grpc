@@ -11,6 +11,10 @@ service RegistraGrpcService {
   rpc registra (RegistraPixRequest) returns (RegistraPixResponse) {}
 }
 
+service RemoveGrpcService {
+  rpc remove (RemovePixRequest) returns (RemovePixResponse){}
+}
+
 enum TipoChave{
   CHAVE_DESCONHECIDA = 0;
   CPF = 1;
@@ -35,4 +39,13 @@ message RegistraPixRequest {
 message RegistraPixResponse {
   string clientId = 1;
   string PixId = 2;
+}
+
+message RemovePixRequest{
+  string pixId = 1;
+  string clientId = 2;
+}
+
+message RemovePixResponse{
+  string resposta = 1;
 }
