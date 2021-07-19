@@ -2,6 +2,9 @@ package br.com.zup.b1gvini.pix.grpc.remove
 
 import br.com.zup.b1gvini.RemoveGrpcServiceGrpc
 import br.com.zup.b1gvini.RemovePixRequest
+import br.com.zup.b1gvini.clients.BCB
+import br.com.zup.b1gvini.clients.DeletePixKeyRequest
+import br.com.zup.b1gvini.clients.DeletePixKeyResponse
 import br.com.zup.b1gvini.clients.ItauERP
 import br.com.zup.b1gvini.clients.dtos.ContaClienteItauResponse
 import br.com.zup.b1gvini.pix.model.ChavePix
@@ -24,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @MicronautTest(transactional = false)
@@ -34,6 +38,9 @@ internal class RemoveChavePixEndpointTest(
     @Inject
     lateinit var itauClient: ItauERP;
 
+    @Inject
+    lateinit var bcbClient: BCB;
+
     @BeforeEach
     internal fun setUp(){
         repository.deleteAll()
@@ -42,6 +49,11 @@ internal class RemoveChavePixEndpointTest(
     @MockBean(ItauERP::class)
     fun itauErpMock(): ItauERP {
         return Mockito.mock(ItauERP::class.java)
+    }
+
+    @MockBean(BCB::class)
+    fun bcbClientMock(): BCB{
+        return Mockito.mock(BCB::class.java)
     }
 
     val request = RemovePixRequest.newBuilder()
@@ -102,12 +114,39 @@ internal class RemoveChavePixEndpointTest(
         val request = request.setPixId(chavePix.pixId)
                                 .setClientId(chavePix.clientId)
                                 .build()
-        Mockito.`when`(itauClient.buscarContaCliente(request.clientId, chavePix.tipoConta)).thenReturn(HttpResponse.ok(itauResponse))
+        Mockito.`when`(itauClient.buscarContaCliente(request.clientId, chavePix.tipoConta))
+            .thenReturn(HttpResponse.ok(itauResponse))
+        Mockito.`when`(bcbClient.deletarChavePix(chavePix.chave, DeletePixKeyRequest(chavePix.chave)))
+            .thenReturn(HttpResponse.ok(DeletePixKeyResponse(chavePix.chave,ContaAssociada.ITAU_UNIBANCO_ISPB, LocalDateTime.now())))
         //acao
         val response = serviceGrpc.remove(request)
         //validacao
         assertEquals("Excluída com sucesso", response.resposta)
         assertTrue(repository.findAll().isEmpty())
+    }
+
+    @Test
+    fun `deve retornar erro se falhar comunicacao com BCB`(){
+        repository.save(chavePixArmando)
+        val chavePix = repository.findAll().first()
+        val request = request.setPixId(chavePix.pixId)
+            .setClientId(chavePix.clientId)
+            .build()
+        Mockito.`when`(itauClient.buscarContaCliente(request.clientId, chavePix.tipoConta))
+            .thenReturn(HttpResponse.ok(itauResponse))
+        Mockito.`when`(bcbClient.deletarChavePix(chavePix.chave, DeletePixKeyRequest(chavePix.chave)))
+            .thenReturn(HttpResponse.badRequest())
+        //acao
+        val excecao = assertThrows<StatusRuntimeException> {
+            serviceGrpc.remove(request)
+        }
+        //validacao
+        with(excecao){
+            assertEquals(Status.INTERNAL.code, status.code)
+            assertEquals("Erro ao deletar pix no BCB", status.description)
+            assertFalse(repository.findAll().isEmpty())
+        }
+
     }
 
     @Test

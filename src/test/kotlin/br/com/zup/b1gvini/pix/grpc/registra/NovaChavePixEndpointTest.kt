@@ -4,7 +4,7 @@ import br.com.zup.b1gvini.RegistraGrpcServiceGrpc
 import br.com.zup.b1gvini.RegistraPixRequest
 import br.com.zup.b1gvini.TipoChave
 import br.com.zup.b1gvini.TipoConta
-import br.com.zup.b1gvini.clients.ItauERP
+import br.com.zup.b1gvini.clients.*
 import br.com.zup.b1gvini.clients.dtos.ContaClienteItauResponse
 import br.com.zup.b1gvini.pix.model.ChavePix
 import br.com.zup.b1gvini.pix.model.ContaAssociada
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @MicronautTest(transactional = false)
@@ -35,9 +36,17 @@ internal class NovaChavePixEndpointTest(
     @Inject
     lateinit var itauClient: ItauERP;
 
+    @Inject
+    lateinit var bcbClient: BCB
+
     @MockBean(ItauERP::class)
     fun itauClientMock(): ItauERP{
         return Mockito.mock(ItauERP::class.java)
+    }
+
+    @MockBean(BCB::class)
+    fun bcbClientMock(): BCB{
+        return Mockito.mock(BCB::class.java)
     }
 
     val requestChavePix = RegistraPixRequest.newBuilder()
@@ -68,14 +77,67 @@ internal class NovaChavePixEndpointTest(
         agencia = "0007",
         numero = "100010",
         titular = ContaClienteItauResponse
-            .TitularResponse("Armando","01002003045")
+            .TitularResponse("Armando","63657520325")
     )
+
+    private fun createPixKeyRequest(): CreatePixKeyRequest {
+        return CreatePixKeyRequest(
+            keyType = PixKeyType.EMAIL,
+            key = "armando@mail.com",
+            bankAccount = bankAccount(),
+            owner = owner()
+        )
+    }
+
+    private fun createPixKeyResponse(): CreatePixKeyResponse {
+        return CreatePixKeyResponse(
+            keyType = PixKeyType.EMAIL,
+            key = "armando@mail.com",
+            bankAccount = bankAccount(),
+            owner = owner(),
+            createdAt = LocalDateTime.now()
+        )
+    }
+    private fun createPixRandomKeyRequest(): CreatePixKeyRequest {
+        return CreatePixKeyRequest(
+            keyType = PixKeyType.RANDOM,
+            key = "",
+            bankAccount = bankAccount(),
+            owner = owner()
+        )
+    }
+
+    private fun createPixRandomKeyResponse(): CreatePixKeyResponse {
+        return CreatePixKeyResponse(
+            keyType = PixKeyType.RANDOM,
+            key = "random",
+            bankAccount = bankAccount(),
+            owner = owner(),
+            createdAt = LocalDateTime.now()
+        )
+    }
+
+    private fun bankAccount(): BankAccount {
+        return BankAccount(
+            participant = ContaAssociada.ITAU_UNIBANCO_ISPB,
+            branch = "0007",
+            accountNumber = "100010",
+            accountType = BankAccount.AccountType.CACC
+        )
+    }
+
+    private fun owner(): Owner {
+        return Owner(
+            type = Owner.OwnerType.NATURAL_PERSON,
+            name = "Armando",
+            taxIdNumber = "63657520325"
+        )
+    }
 
     @BeforeEach
     internal fun setUp(){
         repository.deleteAll()
     }
-
     @Test
     fun `Deve cadastrar chave pix com sucesso`(){
 
@@ -83,6 +145,9 @@ internal class NovaChavePixEndpointTest(
         val request = requestChavePix.build()
         Mockito.`when`(itauClient.buscarContaCliente(request.clientId, br.com.zup.b1gvini.pix.model.enums.TipoConta.CONTA_CORRENTE))
             .thenReturn(HttpResponse.ok(itauResponse))
+
+        Mockito.`when`(bcbClient.criarChavePix(createPixKeyRequest()))
+            .thenReturn(HttpResponse.created(createPixKeyResponse()))
         // acao
         val response = serviceGrpc.registra(request)
         // validacao
@@ -91,7 +156,6 @@ internal class NovaChavePixEndpointTest(
             assertEquals(chavePix.pixId, pixId)
         }
     }
-
     @Test
     fun `Deve cadastrar chave pix aleatoria com sucesso`(){
 
@@ -101,6 +165,8 @@ internal class NovaChavePixEndpointTest(
             .build()
         Mockito.`when`(itauClient.buscarContaCliente(request.clientId, br.com.zup.b1gvini.pix.model.enums.TipoConta.CONTA_CORRENTE))
             .thenReturn(HttpResponse.ok(itauResponse))
+        Mockito.`when`(bcbClient.criarChavePix(createPixRandomKeyRequest()))
+            .thenReturn(HttpResponse.created(createPixRandomKeyResponse()))
         // acao
         val response = serviceGrpc.registra(request)
         // validacao
@@ -109,7 +175,6 @@ internal class NovaChavePixEndpointTest(
             assertNotNull(chavePix.chave)
         }
     }
-
     @Test
     fun `nao deve registrar chave pix que ja existe`() {
         //cenario
@@ -131,7 +196,28 @@ internal class NovaChavePixEndpointTest(
         }
 
     }
+    @Test
+    fun `nao deve registrar chave pix quando nao conseguir se comunicar com BCB`() {
+        //cenario
+        val request = requestChavePix.build()
+        Mockito.`when`(itauClient.buscarContaCliente(request.clientId, br.com.zup.b1gvini.pix.model.enums.TipoConta.CONTA_CORRENTE))
+            .thenReturn(HttpResponse.ok(itauResponse))
+        Mockito.`when`(bcbClient.criarChavePix(createPixKeyRequest()))
+            .thenReturn(HttpResponse.badRequest())
 
+        //acao
+        val excecao = assertThrows<StatusRuntimeException>{
+            serviceGrpc.registra(request)
+
+        }
+
+        //validacao
+        with(excecao){
+            assertEquals(Status.INTERNAL.code, status.code)
+            assertEquals("Erro ao registrar chave pix no banco central do Brasil", status.description)
+        }
+
+    }
     @Test
     fun `Deve retornar erro quando o tipo da chave nao eh valida`(){
 
@@ -149,7 +235,6 @@ internal class NovaChavePixEndpointTest(
         }
 
     }
-
     @Test
     fun `Deve retornar erro quando o tipo da conta nao eh valida`(){
 
@@ -167,7 +252,6 @@ internal class NovaChavePixEndpointTest(
         }
 
     }
-
     @Test
     fun `nao deve registrar chave pix quando cliente invalido no itau`() {
         // cenário
@@ -186,7 +270,6 @@ internal class NovaChavePixEndpointTest(
             assertEquals("ClienteId '471d4c54-e582-11eb-ba80-0242ac130004' nao encontrado", status.description)
         }
     }
-
     @Test
     fun `nao deve registrar chave pix quando parametros forem invalidos`() {
         // ação
