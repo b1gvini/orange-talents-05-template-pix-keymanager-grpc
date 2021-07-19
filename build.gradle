@@ -50,6 +50,8 @@ dependencies {
     testImplementation("com.h2database:h2")
     testImplementation("org.mockito:mockito-core:3.8.0")
     testImplementation("org.mockito:mockito-inline:3.8.0")
+    //XML
+    implementation("io.micronaut.xml:micronaut-jackson-xml")
 
 }
 

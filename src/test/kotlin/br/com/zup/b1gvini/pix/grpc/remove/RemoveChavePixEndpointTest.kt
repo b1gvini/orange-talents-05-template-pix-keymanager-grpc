@@ -3,7 +3,7 @@ package br.com.zup.b1gvini.pix.grpc.remove
 import br.com.zup.b1gvini.RemoveGrpcServiceGrpc
 import br.com.zup.b1gvini.RemovePixRequest
 import br.com.zup.b1gvini.clients.ItauERP
-import br.com.zup.b1gvini.clients.dtos.ContaClienteResponse
+import br.com.zup.b1gvini.clients.dtos.ContaClienteItauResponse
 import br.com.zup.b1gvini.pix.model.ChavePix
 import br.com.zup.b1gvini.pix.model.ContaAssociada
 import br.com.zup.b1gvini.pix.model.enums.TipoChave
@@ -55,11 +55,11 @@ internal class RemoveChavePixEndpointTest(
         tipoConta = TipoConta.CONTA_CORRENTE,
         conta = ContaAssociada(
             instituicaoNome = "delcoi",
-            instituicaoIspb = "ispb",
+            instituicaoIspb = "60701190",
             titularNome = "Armando Del Coi",
             titularCpf = "06628726061",
             agencia = "0001",
-            numeroConta = "10001"
+            numeroConta = "100001"
         )
     )
 
@@ -70,20 +70,20 @@ internal class RemoveChavePixEndpointTest(
         tipoConta = TipoConta.CONTA_CORRENTE,
         conta = ContaAssociada(
             instituicaoNome = "delcoi",
-            instituicaoIspb = "ispb",
+            instituicaoIspb = "60701190",
             titularNome = "Gi",
             titularCpf = "86135457004",
             agencia = "0002",
-            numeroConta = "20002"
+            numeroConta = "200002"
         )
     )
 
-    val itauResponse = ContaClienteResponse(
+    val itauResponse = ContaClienteItauResponse(
         tipo = "CONTA_CORRENTE",
-        instituicao = ContaClienteResponse.InstituicaoResponse("delcoi", "ispb"),
-        agencia = "0001",
-        numero = "10001",
-        titular = ContaClienteResponse.TitularResponse("Armando Del Coi", "06628726061")
+        instituicao = ContaClienteItauResponse.InstituicaoResponse("delcoi", "60701190"),
+        agencia = "00001",
+        numero = "100001",
+        titular = ContaClienteItauResponse.TitularResponse("Armando Del Coi", "06628726061")
     )
 
     @Factory
@@ -151,7 +151,7 @@ internal class RemoveChavePixEndpointTest(
         //validacao
         assertEquals(Status.INTERNAL.code, excecao.status.code)
         assertEquals("Dados inconsistente.", excecao.status.description)
-        
+
     }
 }
 

@@ -2,7 +2,7 @@ package br.com.zup.b1gvini.clients.dtos
 
 import br.com.zup.b1gvini.pix.model.ContaAssociada
 
-data class ContaClienteResponse(
+data class ContaClienteItauResponse(
     val tipo: String,
     val instituicao: InstituicaoResponse,
     val agencia: String,

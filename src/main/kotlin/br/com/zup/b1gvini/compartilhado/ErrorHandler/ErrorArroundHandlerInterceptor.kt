@@ -9,6 +9,8 @@ import io.grpc.stub.StreamObserver
 import io.micronaut.aop.InterceptorBean
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
+import io.micronaut.http.client.exceptions.HttpClientException
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import javax.inject.Singleton
 import javax.validation.ConstraintViolationException
 
@@ -37,6 +39,9 @@ class ErrorAroundHandlerInterceptor : MethodInterceptor<Any, Any> {
                     .withCause(ex)
                     .withDescription(ex.message)
 
+                is HttpClientException -> Status.ABORTED
+                    .withCause(ex)
+                    .withDescription("Falha de comunicacao com servidor externo")
                 else -> Status.UNKNOWN
                     .withCause(ex)
                     .withDescription("Ops, um erro inesperado ocorreu")

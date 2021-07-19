@@ -1,6 +1,6 @@
 package br.com.zup.b1gvini.clients
 
-import br.com.zup.b1gvini.clients.dtos.ContaClienteResponse
+import br.com.zup.b1gvini.clients.dtos.ContaClienteItauResponse
 import br.com.zup.b1gvini.pix.model.enums.TipoConta
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Get
@@ -12,6 +12,6 @@ import io.micronaut.http.client.annotation.Client
 interface ItauERP {
 
     @Get("/v1/clientes/{clienteId}/contas")
-    fun buscarContaCliente(@PathVariable clienteId: String, @QueryValue("tipo") tipo: TipoConta): HttpResponse<ContaClienteResponse>
+    fun buscarContaCliente(@PathVariable clienteId: String, @QueryValue("tipo") tipo: TipoConta): HttpResponse<ContaClienteItauResponse>
 
 }

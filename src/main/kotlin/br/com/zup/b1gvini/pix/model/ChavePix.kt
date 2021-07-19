@@ -17,7 +17,7 @@ import javax.validation.constraints.Size
 class ChavePix(
     @field:NotBlank @field:ValidUUID val clientId: String,
     @field:NotNull @Enumerated(EnumType.STRING) val tipoChave: TipoChave,
-    @field:NotBlank @field:Size(max=77) val chave: String,
+    @field:NotBlank @field:Size(max=77) var chave: String,
     @field:NotNull @Enumerated(EnumType.STRING) val tipoConta: TipoConta,
     @field:Valid @Embedded val conta: ContaAssociada
 ) {
@@ -28,6 +28,8 @@ class ChavePix(
     var pixId: String = UUID.randomUUID().toString()
 
     var criadoEm: LocalDateTime = LocalDateTime.now()
+
+    //EQUALS AND HASHCODE
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

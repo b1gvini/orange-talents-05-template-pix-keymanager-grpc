@@ -5,7 +5,7 @@ import br.com.zup.b1gvini.RegistraPixRequest
 import br.com.zup.b1gvini.TipoChave
 import br.com.zup.b1gvini.TipoConta
 import br.com.zup.b1gvini.clients.ItauERP
-import br.com.zup.b1gvini.clients.dtos.ContaClienteResponse
+import br.com.zup.b1gvini.clients.dtos.ContaClienteItauResponse
 import br.com.zup.b1gvini.pix.model.ChavePix
 import br.com.zup.b1gvini.pix.model.ContaAssociada
 import br.com.zup.b1gvini.pix.repository.ChavePixRepository
@@ -53,21 +53,21 @@ internal class NovaChavePixEndpointTest(
         tipoConta = br.com.zup.b1gvini.pix.model.enums.TipoConta.CONTA_CORRENTE,
         conta = ContaAssociada(
             instituicaoNome = "Delcoi",
-            instituicaoIspb = "ISPB",
+            instituicaoIspb = "60701190",
             titularNome = "Armando",
             titularCpf = "01002003045",
             agencia = "0007",
-            numeroConta = "1010"
+            numeroConta = "100010"
         )
     )
 
-    val itauResponse = ContaClienteResponse(
+    val itauResponse = ContaClienteItauResponse(
         tipo = "CONTA_CORRENTE",
-        instituicao = ContaClienteResponse
-            .InstituicaoResponse("Delcoi","ISPB"),
+        instituicao = ContaClienteItauResponse
+            .InstituicaoResponse("Delcoi","60701190"),
         agencia = "0007",
-        numero = "1010",
-        titular = ContaClienteResponse
+        numero = "100010",
+        titular = ContaClienteItauResponse
             .TitularResponse("Armando","01002003045")
     )
 

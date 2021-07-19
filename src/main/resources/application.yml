@@ -18,3 +18,7 @@ jpa:
 itau:
   client:
     url: ${ITAUERP_CLIENT_URL:`http://localhost:9091/api`}
+
+bcb:
+  client:
+    url: ${BCB_CLIENT_URL:`http://localhost:8082/api`}
