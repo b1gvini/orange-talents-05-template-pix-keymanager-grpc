@@ -50,5 +50,9 @@ class ChavePix(
         return result
     }
 
+    fun pertenceAo(clienteId: String) : Boolean{
+        return this.clientId == clientId
+    }
+
 
 }

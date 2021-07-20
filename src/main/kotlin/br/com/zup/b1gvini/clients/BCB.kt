@@ -1,5 +1,6 @@
 package br.com.zup.b1gvini.clients
 
+import br.com.zup.b1gvini.pix.grpc.carrega.ChavePixInfo
 import br.com.zup.b1gvini.pix.model.ChavePix
 import br.com.zup.b1gvini.pix.model.ContaAssociada
 import br.com.zup.b1gvini.pix.model.enums.TipoChave
@@ -21,6 +22,10 @@ interface BCB {
     @Produces(MediaType.APPLICATION_XML)
     @Consumes(MediaType.APPLICATION_XML)
     fun deletarChavePix(@PathVariable key: String, @Body deletePixKeyrequest: DeletePixKeyRequest): HttpResponse<Any>
+
+    @Get("/v1/pix/keys/{key}")
+    @Consumes(MediaType.APPLICATION_XML)
+    fun buscarChavePix(@PathVariable key: String): HttpResponse<PixKeyDetailsResponse>
 
 }
 data class DeletePixKeyRequest(
@@ -129,5 +134,33 @@ enum class PixKeyType(val domainType: TipoChave?) {
         fun by(domainType: TipoChave): PixKeyType {
             return  mapping[domainType] ?: throw IllegalArgumentException("PixKeyType invalid or not found for $domainType")
         }
+    }
+}
+
+data class PixKeyDetailsResponse (
+    val keyType: PixKeyType,
+    val key: String,
+    val bankAccount: BankAccount,
+    val owner: Owner,
+    val createdAt: LocalDateTime
+) {
+
+    fun toModel(): ChavePixInfo {
+        return ChavePixInfo(
+            tipo = keyType.domainType!!,
+            chave = this.key,
+            tipoDeConta = when (this.bankAccount.accountType) {
+                BankAccount.AccountType.CACC -> TipoConta.CONTA_CORRENTE
+                BankAccount.AccountType.SVGS -> TipoConta.CONTA_POUPANCA
+            },
+            conta = ContaAssociada(
+                instituicaoNome = bankAccount.participant,
+                titularNome = owner.name,
+                titularCpf = owner.taxIdNumber,
+                agencia = bankAccount.branch,
+                numeroConta = bankAccount.accountNumber,
+                instituicaoIspb = ContaAssociada.ITAU_UNIBANCO_ISPB
+            )
+        )
     }
 }

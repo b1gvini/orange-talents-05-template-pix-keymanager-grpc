@@ -6,6 +6,7 @@ option java_outer_classname = "Keymanager";
 option objc_class_prefix = "HLW";
 
 package br.com.zup.b1gvini;
+import "google/protobuf/timestamp.proto";
 
 service RegistraGrpcService {
   rpc registra (RegistraPixRequest) returns (RegistraPixResponse) {}
@@ -13,6 +14,10 @@ service RegistraGrpcService {
 
 service RemoveGrpcService {
   rpc remove (RemovePixRequest) returns (RemovePixResponse){}
+}
+
+service CarregaGrpcService{
+  rpc carrega(CarregaPixRequest) returns (CarregaPixResponse){}
 }
 
 enum TipoChave{
@@ -48,4 +53,38 @@ message RemovePixRequest{
 
 message RemovePixResponse{
   string resposta = 1;
+}
+
+message CarregaPixRequest{
+  message FiltroPorPixId{
+    string clientId = 1;
+    string pixId = 2;
+  }
+
+  oneof filtro{
+    FiltroPorPixId pixId = 1;
+    string chave = 2;
+  }
+}
+
+message CarregaPixResponse{
+  message ChavePix{
+    message ContaInfo{
+      TipoConta tipo = 1;
+      string instituicao = 2;
+      string titularNome = 3;
+      string titularCpf = 4;
+      string agencia = 5;
+      string numeroConta = 6;
+    }
+
+    TipoChave tipo = 1;
+    string chave = 2;
+    ContaInfo conta = 3;
+    google.protobuf.Timestamp criadaEm = 4;
+  }
+
+  string clientId = 1;
+  string pixId     = 2;
+  ChavePix chave   = 3;
 }
